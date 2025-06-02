@@ -38,9 +38,50 @@ data/
 ### 1. 모델 구조
 ResNet18을 기반으로 한 딥러닝 모델을 사용합니다. ResNet18은 잔차 연결을 통해 깊은 신경망의 학습을 용이하게 하며, 이미지 분류 작업에 효과적입니다. (추가 요망)
 
-### 2. 학습 과정
-모델은 PyTorch를 사용하여 학습합니다. 데이터셋을 불러오고, 전처리 과정을 거친 후, 모델을 학습합니다. 최적화를 위해 Adam 옵티마이저를 사용하며, 손실 함수로는 CrossEntropyLoss를 사용합니다. 학습 과정에서 모델의 성능을 평가하기 위해 검증 데이터셋을 사용합니다.
-### 3. 학습 환경
+### 2. 학습 환경
 - **프레임워크**: PyTorch
 - **모델**: ResNet18
 - **환경**: Vagon Computer Flame 인스턴스(like as aws ec2 g5.2xlarge, NVIDIA A10G GPU)
+
+### 2. 학습 과정
+모델은 PyTorch를 사용하여 학습합니다. 데이터셋을 불러오고, 전처리 과정을 거친 후, 모델을 학습합니다. 
+
+학습 과정은 다음과 같습니다:
+1. 라이브러리 임포트
+
+```python
+import os
+import torch
+import torchvision.transforms as transforms
+from torchvision import datasets, models
+from torch.utils.data import DataLoader
+import torch.nn as nn
+import torch.optim as optim
+
+import matplotlib.pyplot as plt
+import numpy as np
+from tqdm import tqdm
+from PIL import Image
+```
+- `os`: 파일 및 디렉토리 작업을 위한 모듈
+- `torch`: PyTorch 라이브러리로 딥러닝 모델을 구축하고 학습하는 데 사용
+- `torchvision`: 이미지 데이터셋과 변환을 위한 모듈
+- `torch.utils.data`: 데이터 로더를 위한 유틸리티 모듈
+- `torch.nn`: 신경망 모듈을 위한 PyTorch의 하위 모듈
+- `torch.optim`: 최적화 알고리즘을 위한 모듈
+- `matplotlib.pyplot`: 데이터 시각화를 위한 라이브러리
+- `numpy`: 수치 계산을 위한 라이브러리
+- `tqdm`: 진행 상황 표시를 위한 라이브러리
+- `PIL`: 이미지 처리 라이브러리
+
+2. 데이터셋 준비
+```python
+data_dir = 'data'
+
+# 데이터셋 경로 설정
+train_dir = os.path.join(data_dir, 'train')
+val_dir = os.path.join(data_dir, 'val')
+
+```
+(추가 예정)
+
