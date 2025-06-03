@@ -84,7 +84,7 @@ data/
 └── ...
 ```
 2. 데이터 전처리
-```
+```python
 transform_train = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.RandomHorizontalFlip(),
@@ -100,7 +100,7 @@ transform_val = transforms.Compose([
 ```
 
 ### 4. 데이터 로딩 
-```
+```python    
 train_dir = os.path.join('data', 'train')
 val_dir = os.path.join('data', 'val')
 
@@ -112,7 +112,7 @@ val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 ```
 
 ### 5. 모델 구성 및 학습 설정 
-```
+```python
 model = models.resnet18(pretrained=True)
 model.fc = nn.Linear(model.fc.in_features, 2)  # 중/일 2클래스 분류
 
@@ -121,7 +121,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.0001)
 ```
 
 ### 6. 학습 
-```
+```python
 num_epochs = 10
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
