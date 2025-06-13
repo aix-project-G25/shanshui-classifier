@@ -202,9 +202,9 @@ Precision(정밀도), Recall(재현율), F1-score 등의 지표를 클래스별�
 
 ### 3. Grad-CAM
 
-- 중국 산수화 예시
+### 중국 산수화 예시
 ![gradcam_result_china.png](/gradcam_result_china.png)
-- 일본 산수화 예시
+### 일본 산수화 예시
 ![gradcam_result_japan.png](/gradcam_result_japan.png)
 
 Grad-CAM(Gradient-weighted Class Activation Mapping) 기법을 사용하여 모델이 이미지의 어떤 영역을 집중하는지 분석했습니다. Grad-CAM은 분류 결과에 기여하는 이미지의 중요한 영역을 히트맵 형태로 강조해 주는 방법으로, 마지막 합성곱 계층의 그라디언트 정보를 사용합니다. 예를 들어 모델이 ‘중국화’로 예측한 이미지에 대해 Grad-CAM을 적용하면, 모델이 산과 나무의 특정 부분, 혹은 붓터치와 같은 특징적인 요소를 근거로 삼았는지 확인할 수 있습니다.
@@ -221,9 +221,9 @@ Grad-CAM(Gradient-weighted Class Activation Mapping) 기법을 사용하여 모�
 
 ## VI. 결과 요약 및 한계점
 
-- correct 예시
+### correct 예시
 ![correct_preds_loaded.png](/correct_preds_loaded.png)
-- wrong 예시
+### wrong 예시
 ![wrong_preds_loaded.png](/wrong_preds_loaded.png)
 
 - 최종 검증 정확도: 약 92% (best_model.pth 기준)
