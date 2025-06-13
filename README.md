@@ -39,7 +39,7 @@ transforms.Compose([
 
 ## III. 모델: ResNet-18 상세 설명
 본 프로젝트에서는 ResNet-18 모델을 채택하였습니다.
-ResNet은 딥러닝 모델의 층이 깊어질수록 발생하는 대표적인 문제인 **기울기 소실(vanishing gradient)**과 **성능 저하(degradation)** 문제를 해결하기 위해 제안된 구조입니다. 일반적인 신경망에서는 층이 깊어질수록 오히려 정확도가 낮아지거나 학습이 제대로 되지 않는 문제가 발생합니다. 이를 해결하기 위해 ResNet은 '잔차 연결(residual connection)', 또는 '스킵 연결(skip connection)'이라는 구조를 도입하였습니다.
+ResNet은 딥러닝 모델의 층이 깊어질수록 발생하는 대표적인 문제인 **기울기 소실(vanishing gradient)** 과 **성능 저하(degradation)** 문제를 해결하기 위해 제안된 구조입니다. 일반적인 신경망에서는 층이 깊어질수록 오히려 정확도가 낮아지거나 학습이 제대로 되지 않는 문제가 발생합니다. 이를 해결하기 위해 ResNet은 '잔차 연결(residual connection)', 또는 '스킵 연결(skip connection)'이라는 구조를 도입하였습니다.
 이는 입력값을 몇 개의 층을 건너뛰어 그대로 출력에 더하는 방식으로, 네트워크가 '입력값 그대로를 유지할지', 아니면 '입력값에 어떤 변화를 줄지'를 스스로 선택할 수 있게 만듭니다.
 
 ![스킵 연결 개념도](doc/img1.png)
@@ -158,6 +158,9 @@ if val_accuracies[-1] > best_acc:
     }, "best_model.pth")
 ```
 ### 학습 이력 시각화
+
+![loss_accuracy.png](/loss_accuracy.png)
+
 - train_losses, val_losses, val_accuracies 리스트로 기록.
 - matplotlib로 학습 과정의 손실 및 정확도 그래프 작성.
 - 출력 파일: loss_accuracy.png
@@ -174,26 +177,55 @@ plt.savefig("loss_accuracy.png")
 ## V. 분석 및 시각화
 
 ### 1. 혼동 행렬 (Confusion Matrix)
+
+![confusion_matrix_loaded.png](/confusion_matrix_loaded.png)
+
 모델이 클래스마다 얼마나 정확히 예측했는지 시각적으로 보여줍니다. 혼동 행렬은 실제 클래스와 예측 클래스의 교차표로, 대각선 성분이 올바른 예측 횟수입니다. 이 행렬을 통해 어떤 클래스들이 서로 혼동되는지 쉽게 파악할 수 있습니다.
 - confusion_matrix_loaded.png 생성
 - 클래스별 오분류 패턴 확인
 
 ### 2. 분류 리포트
+```
+Using device: cuda
+              precision    recall  f1-score   support
+
+       china       0.91      1.00      0.95        20
+       japan       1.00      0.90      0.95        20
+
+    accuracy                           0.95        40
+   macro avg       0.95      0.95      0.95        40
+weighted avg       0.95      0.95      0.95        40
+```
 Precision(정밀도), Recall(재현율), F1-score 등의 지표를 클래스별로 계산하여 모델 성능을 평가합니다. Scikit-learn의 classification_report 함수를 통해 각 클래스별 지표를 출력하고, 모델이 특정 클래스에서 편향적으로 예측하지는 않는지 확인합니다.
 - Precision, Recall, F1-score 등 주요 성능 지표 산출
 - classification_report 출력
 
 ### 3. Grad-CAM
+
+**중국 산수화 예시**
+![gradcam_result_china.png](/gradcam_result_china.png)
+**일본 산수화 예시**
+![gradcam_result_japanese.png](/gradcam_result_japanese.png)
+
 Grad-CAM(Gradient-weighted Class Activation Mapping) 기법을 사용하여 모델이 이미지의 어떤 영역을 집중하는지 분석했습니다. Grad-CAM은 분류 결과에 기여하는 이미지의 중요한 영역을 히트맵 형태로 강조해 주는 방법으로, 마지막 합성곱 계층의 그라디언트 정보를 사용합니다. 예를 들어 모델이 ‘중국화’로 예측한 이미지에 대해 Grad-CAM을 적용하면, 모델이 산과 나무의 특정 부분, 혹은 붓터치와 같은 특징적인 요소를 근거로 삼았는지 확인할 수 있습니다.
 - 모델이 예측 시 주목한 이미지 영역 시각화
 - gradcam_result_cn.png, gradcam_result_jp.png 생성
 
 ### 4. t-SNE 시각화
+
+![tsne_loaded.png](/tsne_loaded.png)
+
 테스트 세트의 이미지들을 ResNet-18의 마지막 전 결합층 직전의 고차원 특징 벡터(feature vector)로 추출한 뒤, 이를 2차원으로 축소하여 시각화했습니다. t-SNE는 고차원 데이터를 2D/3D로 비선형 임베딩하여 클래스별 군집 구조를 시각적으로 파악할 수 있게 도와줍니다. 이를 통해 중국화와 일본화 이미지가 임베딩 공간에서 어떻게 분리되는지 확인할 수 있습니다.
 - 고차원 feature embedding을 2D로 축소하여 시각화
 - tsne_loaded.png 생성
 
 ## VI. 결과 요약 및 한계점
+
+**correct 예시**
+![correct_preds_loaded.png](/correct_preds_loaded.png)
+**wrong 예시**
+![wrong_preds_loaded.png](/wrong_preds_loaded.png)
+
 - 최종 검증 정확도: 약 92% (best_model.pth 기준)
 - Grad-CAM 및 t-SNE 분석을 통해 모델이 특징적인 시각 패턴을 잘 학습했음을 확인함
 - 일부 유사 이미지 간 오분류 존재 (예: 구름, 산의 표현이 비슷한 경우)
