@@ -245,3 +245,112 @@ Grad-CAM(Gradient-weighted Class Activation Mapping) 기법을 사용하여 모�
 - `sansuha_resnet18_learn.py`: 전체 학습 파이프라인 구현
 - `sansuha_resnet18_analyze.py`: 분석 및 시각화 도구 구현
 
+## VIII. 실제 서비스 개발
+
+백엔드는 PyTorch 기반 ResNet-18 모델과 FastAPI 서버를 활용하며, 다음과 같은 흐름으로 동작합니다.
+
+---
+
+### 분류 결과 예시
+
+#### 예시 1: 중국 산수화
+
+- 입력 이미지:  
+  ![중국 산수화 예시](./doc/4.png)  
+- 분류 결과:
+  - 클래스: **Chinese**
+  - 신뢰도: **99.5%**
+
+#### 예시 2: 일본 산수화
+
+- 입력 이미지:  
+  ![일본 산수화 예시](./doc/5.png)  
+- 분류 결과:
+  - 클래스: **Japanese**
+  - 신뢰도: **100.0%**
+
+#### 예시 3: 결과 및 설명 UI
+
+- 전체 예측 결과와 모델 설명이 함께 제공됨  
+  ![결과 UI 예시](./doc/6.png)
+
+---
+
+## 🧠 백엔드 모델 처리 상세
+
+클라이언트로부터 이미지를 받아 모델이 예측 결과를 반환하기까지의 과정은 다음과 같습니다:
+
+### 🔹 1. 모델 로딩 및 초기화
+
+```python
+model = models.resnet18()
+model.fc = nn.Linear(model.fc.in_features, len(class_names))
+```
+
+- 사전학습된 ResNet-18 모델을 불러옵니다.
+- `model.fc`를 2개의 클래스(중국/일본)에 맞게 수정합니다.
+
+```python
+checkpoint = torch.load("best_model.pth", map_location=device)
+model.load_state_dict(checkpoint["model_state_dict"])
+model.to(device)
+model.eval()
+```
+
+- `best_model.pth`에서 학습된 가중치를 불러옵니다.
+- `model.eval()`을 통해 평가 모드로 설정합니다 (Dropout/BN 비활성화).
+
+---
+
+### 🔹 2. 업로드된 이미지 처리
+
+```python
+contents = await file.read()
+image = Image.open(BytesIO(contents)).convert("RGB")
+```
+
+- 사용자가 업로드한 파일을 메모리에서 읽고, `PIL.Image`로 RGB 변환합니다.
+
+```python
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225])
+])
+image_tensor = transform(image).unsqueeze(0).to(device)
+```
+
+- 학습과 동일한 전처리 적용 (리사이즈 → 텐서 변환 → 정규화).
+- `.unsqueeze(0)`을 통해 배치 차원 추가 (1, 3, 224, 224).
+
+---
+
+### 🔹 3. 모델 추론
+
+```python
+with torch.no_grad():
+    outputs = model(image_tensor)
+    probabilities = torch.nn.functional.softmax(outputs, dim=1)[0]
+    predicted_class_idx = torch.argmax(probabilities).item()
+    confidence = probabilities[predicted_class_idx].item()
+```
+
+- `torch.no_grad()`로 추론 시 그래디언트 비활성화.
+- 출력값에 softmax를 적용하여 각 클래스 확률 계산.
+- `argmax`로 가장 높은 확률을 가지는 클래스 인덱스를 선택.
+- 해당 클래스의 확률을 `confidence`로 저장.
+
+---
+
+### 🔹 4. 응답 결과 반환
+
+```python
+result = {
+    "class": class_names[predicted_class_idx],
+    "confidence": confidence,
+    "processing_time_ms": round(processing_time * 1000, 2)
+}
+```
+
+- 예측된 클래스 이름과 확률, 처리 시간을 JSON 형식으로 응답합니다.
